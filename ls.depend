@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1553346269 source:/home/xjy/Desktop/ls/main.c
+	<stdio.h>
+	<stdlib.h>
+	<sys/stat.h>
+	<dirent.h>
+	<unistd.h>
+	<string.h>
+
