@@ -1,7 +1,7 @@
 #ifndef PRINT_H_INCLUDED
 #define PRINT_H_INCLUDED
 #include<sys/stat.h>
-
+#include"ls.h"
 void printlongformat(struct filename f[],int count);
 void mode_to_letters(int mode,char str[]);
 char *gid_to_name(gid_t gid);

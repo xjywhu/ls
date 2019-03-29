@@ -4,34 +4,17 @@
 #include<dirent.h>
 #include <unistd.h>
 #include<string.h>
+#include "cmp.h"
+#include "print.h"
+#include "ls.h"
 
-struct filename{
+/*struct filename{
 char*name;
 int type;
-};
+};*/
 
 
 
-/*void dicSort(struct filename f[],int count){
-char* temp;
-int type;
-for(int i=0;i<count-1;i++){
-  for(int k=i+1;k<count;k++){
-if(strcasecmp(f[i].name,f[k].name)>0||(strcasecmp(f[i].name,f[k].name)==0&&f[i].type==1)){
-temp=(char*)malloc(sizeof(char)*50);
-strcpy(temp,f[i].name);
-strcpy(f[i].name,f[k].name);
-strcpy(f[k].name,temp);
-type=f[i].type;
-f[i].type=f[k].type;
-f[k].type=type;
-       }
-    }
-  }
-for(int k=0;k<count;k++){
-printf("%s\n", f[k].name);
-}
-}*/
 
 int do_ls(char*file_name){
  DIR *dp;
@@ -66,7 +49,10 @@ int do_ls(char*file_name){
 	f[count]=fn;
 	count++;
 	}
-	dicSort(f,count);
+	//dicSort(f,count);
+	//printlongformat(f,count);
+    timeSort(f,count);
+	printlongformat(f,count);
 	closedir(dp);
 	return 0;
 }

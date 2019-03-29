@@ -1,4 +1,4 @@
-#include "ls.h"
+
 #include "print.h"
 #include<sys/stat.h>
 #include <unistd.h>
@@ -8,6 +8,8 @@
 #include<string.h>
 #include<grp.h>
 #include<time.h>
+#include <pwd.h>
+#include <sys/types.h>
 
 
 void mode_to_letters(int mode,char str[])
@@ -36,7 +38,7 @@ void mode_to_letters(int mode,char str[])
 
 char *gid_to_name(gid_t gid)
 {
-	struct group *getgrgid(), *grp_ptr;
+	struct group*grp_ptr;
 	static  char numstr[10];
 
 	if ( ( grp_ptr = getgrgid(gid) ) == NULL ){
@@ -49,19 +51,18 @@ char *gid_to_name(gid_t gid)
 
 char *uid_to_name( uid_t uid )
 {
-	struct	passwd *pw_ptr;
+	struct	passwd* pw_ptr;
 	static  char numstr[10];
 
 	if ((pw_ptr = getpwuid(uid)) == NULL ){
 		sprintf(numstr,"%d", uid);
 		return numstr;
+
 	}
 	else
-		return *pw_ptr->pw_name;
+		return pw_ptr->pw_name;
 
 }
-
-
 
 void printlongformat(struct filename f[],int count){
 
@@ -77,14 +78,16 @@ for(int i=0;i<count;i++){
 mode_to_letters(st.st_mode,str);
 printf("%s",str);
 printf("%4d",(int)st.st_nlink);
-printf("%-8s ",uid_to_name(st.st_uid));
-printf("%-8s ",gid_to_name(st.st_gid));
+printf("%8s ",uid_to_name(st.st_uid));
+printf("%8s ",gid_to_name(st.st_gid));
+
+//printf("%8d ",st.st_uid);
+//printf("%8d ",st.st_gid);
+
 printf("%8ld ",(long)st.st_size);
-printf("%.12s ",ctime(st.st_mtime)+4);
+printf("%.12s ",ctime(&st.st_mtime)+4);
 printf("%s\n",f[i].name);
 
 }
-
-
 
 }

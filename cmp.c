@@ -2,9 +2,8 @@
 #include <ctype.h>
 #include<string.h>
 #include <stdlib.h>
-#include "ls.h"
-
-
+#include<sys/stat.h>
+#include "cmp.h"
 
 int dicCmp(char*s1,char*s2){
 char*temp1;
@@ -59,7 +58,46 @@ f[k].type=type;
        }
     }
   }
-for(int k=0;k<count;k++){
-printf("%s\n", f[k].name);
+
 }
+
+int timeCmp(char*s1,char*s2){
+struct stat st1;
+struct stat st2;
+if(lstat(s1, &st1) < 0) {
+  perror(s1);
+  exit(1);
+ }
+if(lstat(s2, &st2) < 0) {
+  perror(s2);
+  exit(1);
+ }
+if(st1.st_mtime>st2.st_mtime)
+return 0;
+else{
+if(st1.st_mtime==st2.st_mtime)
+return 1;
+else
+return 2;
+}
+}
+
+
+void timeSort(struct filename f[],int count){
+char* temp;
+int type;
+for(int i=0;i<count-1;i++){
+  for(int k=i+1;k<count;k++){
+if(timeCmp(f[i].name,f[k].name)==2||(timeCmp(f[i].name,f[k].name)==1&&f[i].type==1)){
+temp=(char*)malloc(sizeof(char)*50);
+strcpy(temp,f[i].name);
+strcpy(f[i].name,f[k].name);
+strcpy(f[k].name,temp);
+type=f[i].type;
+f[i].type=f[k].type;
+f[k].type=type;
+       }
+    }
+  }
+
 }
