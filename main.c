@@ -12,7 +12,7 @@ int type;
 
 
 
-void dicSort(struct filename f[],int count){
+/*void dicSort(struct filename f[],int count){
 char* temp;
 int type;
 for(int i=0;i<count-1;i++){
@@ -31,7 +31,7 @@ f[k].type=type;
 for(int k=0;k<count;k++){
 printf("%s\n", f[k].name);
 }
-}
+}*/
 
 int do_ls(char*file_name){
  DIR *dp;
