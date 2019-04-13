@@ -8,52 +8,86 @@
 #include "print.h"
 #include "ls.h"
 
-/*struct filename{
-char*name;
-int type;
-};*/
-
-
-
-
-int do_ls(char*file_name){
+/*参数优先级d,a,A*/
+int getFileNameArray(char*file_path,struct filename f[],char* paramater,int* count){
  DIR *dp;
  struct dirent *dirp;
  struct stat st;
- struct filename f[20];
- int count=0;
- if(lstat(file_name, &st) < 0) {
-  perror(file_name);
-  exit(1);
- }
- 	if ((dp = opendir(file_name)) == NULL){
-	printf("can't open %s",file_name);
-	exit(1);
-	}
-	while ((dirp = readdir(dp)) != NULL){
-	if(strcmp(dirp->d_name,".")==0||strcmp(dirp->d_name,"..")==0){
-	continue;
-	}
-	struct filename fn;
-	fn.name=dirp->d_name;
-	if(lstat(file_name, &st) < 0) {
-    perror(file_name);
+ struct filename fn;
+ int tempcount=0;
+ 	if(lstat(file_path, &st) < 0) {
+    perror(file_path);
     exit(1);
     }
 	if(S_ISREG(st.st_mode)){
-	fn.type=0;
+    fn.name=(char*)malloc(sizeof(char)*50);
+	strcpy(fn.name,file_path);
+	fn.type=isFile;
+	f[tempcount]=fn;
+	tempcount++;
+	*count=tempcount;
+	return 0;
 	}
 	if(S_ISDIR(st.st_mode)){
-    fn.type=1;
+    if ((dp = opendir(file_path)) == NULL){
+	printf("can't open %s",file_path);
+	exit(1);
 	}
-	f[count]=fn;
-	count++;
 	}
+
+
+    if(strrchr(paramater,'d')!=NULL){
+    fn.name=(char*)malloc(sizeof(char)*1);
+	strcpy(fn.name,".");
+	fn.type=isDirectory;
+	f[tempcount]=fn;
+	tempcount++;
+	*count=tempcount;
+	return 0;
+    }
+while ((dirp = readdir(dp)) != NULL){
+
+
+    if(strrchr(paramater,'A')!=NULL&&strrchr(paramater,'a')==NULL){
+        if(strcmp(dirp->d_name,".")==0||strcmp(dirp->d_name,"..")==0)
+	    continue;
+    }
+
+	fn.name=(char*)malloc(sizeof(char)*50);
+	strcpy(fn.name,dirp->d_name);
+	if(lstat(dirp->d_name, &st) < 0) {
+    perror(dirp->d_name);
+    exit(1);
+    }
+	if(S_ISREG(st.st_mode)){
+	fn.type=isFile;
+	}
+	if(S_ISDIR(st.st_mode)){
+    fn.type=isDirectory;
+	}
+	f[tempcount]=fn;
+	tempcount++;
+	}
+    closedir(dp);
+    *count=tempcount;
+	return 0;
+}
+
+
+int do_ls(char*file_path){
+
+ int count=0;
+ struct filename f[30];
+ if(getFileNameArray(file_path,f,"a",&count)==1)
+ exit(1);
+
 	//dicSort(f,count);
-	//printlongformat(f,count);
-    timeSort(f,count);
-	printlongformat(f,count);
-	closedir(dp);
+    sortWithMode(f,count,"u");
+	printlongformat(f,count,"shuat");
+    //reverseSort(f,count);
+	//printNormalformat(f,count,"Fsih");
+
+
 	return 0;
 }
 
@@ -97,6 +131,9 @@ return 0;
 
 int main(int argc,char*argv[])
 {
+
+
+
     switch(argc){
     case 1:
     if(doCurrent()==1)

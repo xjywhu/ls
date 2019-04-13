@@ -1,4 +1,3 @@
-
 #include "print.h"
 #include<sys/stat.h>
 #include <unistd.h>
@@ -64,10 +63,25 @@ char *uid_to_name( uid_t uid )
 
 }
 
-void printlongformat(struct filename f[],int count){
-
- struct stat st;
+void printlongformat(struct filename f[],int count,char *paramater){
+long int total=0;
+struct stat st;
 char str[10];
+int isPrint=0;
+
+for(int i=0;i<count;i++){
+ if(lstat(f[i].name, &st) < 0) {
+  perror(f[i].name);
+  exit(1);
+ }
+  total+=st.st_blocks/2;
+ }
+
+ /*print total*/
+if(strrchr(paramater,'h')!=NULL)
+ printf("total %ldk\n",total);
+else
+ printf("total %ld\n",total);
 
 for(int i=0;i<count;i++){
  if(lstat(f[i].name, &st) < 0) {
@@ -76,18 +90,124 @@ for(int i=0;i<count;i++){
  }
 
 mode_to_letters(st.st_mode,str);
+/*print i-node number*/
+if(strrchr(paramater,'i')!=NULL)
+printf("%ld ",st.st_ino);
+
+/*print the number of blocks*/
+if(strrchr(paramater,'s')!=NULL){
+if(strrchr(paramater,'h')!=NULL)
+printf("%.1fk ",(float)st.st_blocks/2);
+else
+printf("%ld ",st.st_blocks/2);
+}
+
+
 printf("%s",str);
 printf("%4d",(int)st.st_nlink);
+
+/*print the id*/
+if(strrchr(paramater,'n')!=NULL){
+printf("%8d ",st.st_uid);
+printf("%8d ",st.st_gid);
+}else{
 printf("%8s ",uid_to_name(st.st_uid));
 printf("%8s ",gid_to_name(st.st_gid));
+}
 
-//printf("%8d ",st.st_uid);
-//printf("%8d ",st.st_gid);
-
+/*print the size*/
+/*h*/
+if(strrchr(paramater,'h')!=NULL){
+if(st.st_size<1024)
 printf("%8ld ",(long)st.st_size);
-printf("%.12s ",ctime(&st.st_mtime)+4);
-printf("%s\n",f[i].name);
+else{
+if(st.st_size%1024==0)
+printf("%8.1fk ",(float)(st.st_size)/1024);
+else
+//printf("%8.1fk ",(float)(st.st_size+102.3)/1024);
+printf("%8.1fk ",(float)ceil((float)(st.st_size)/102.4)/10);
+}
 
 }
+else
+printf("%8ld ",(long)st.st_size);
+
+/*print time*/
+if(strrchr(paramater,'u')==NULL&&strrchr(paramater,'c')!=NULL){
+printf("%.12s ",ctime(&st.st_ctime)+4);
+}
+else if(strrchr(paramater,'u')!=NULL&&strrchr(paramater,'c')==NULL){
+printf("%.12s ",ctime(&st.st_atime)+4);
+}
+else if(strrchr(paramater,'u')!=NULL&&strrchr(paramater,'c')!=NULL){
+if(strrchr(paramater,'u')>strrchr(paramater,'c'))
+printf("%.12s ",ctime(&st.st_atime)+4);
+else
+printf("%.12s ",ctime(&st.st_ctime)+4);
+}else{
+printf("%.12s ",ctime(&st.st_mtime)+4);
+}
+
+
+if(strrchr(paramater,'F')!=NULL){
+if(S_ISREG(st.st_mode)&&(S_IXUSR&st.st_mode)){printf("%s*\n",f[i].name); isPrint=1;}
+if(S_ISDIR(st.st_mode)){printf("%s/\n",f[i].name);isPrint=1;}
+if(S_ISLNK(st.st_mode)){printf("%s@\n",f[i].name);isPrint=1;}
+if(S_ISSOCK(st.st_mode)){printf("%s=\n",f[i].name);isPrint=1;}
+if(S_ISFIFO(st.st_mode)){printf("%s|\n",f[i].name);isPrint=1;}
+
+}
+if(isPrint==0)
+printf("%s\n",f[i].name);
+isPrint=0;
+
+}
+
+}
+/*relative to the width of screen*/
+void printNormalformat(struct filename f[],int count,char* paramater){
+struct stat st;
+int isPrint=0;
+for(int i=0;i<count;i++){
+ if(lstat(f[i].name, &st) < 0) {
+  perror(f[i].name);
+  exit(1);
+ }
+
+/*print i node*/
+if(strchr(paramater,'i')!=NULL)
+printf("%ld ",st.st_ino);
+/*print the number of blocks*/
+if(strchr(paramater,'s')!=NULL){
+if(strchr(paramater,'h')!=NULL)
+printf("%.1fk ",(float)st.st_blocks/2);
+else
+printf("%ld ",st.st_blocks/2);
+
+}
+
+/*print the type of the file*/
+
+if(strrchr(paramater,'F')!=NULL){
+if(S_ISREG(st.st_mode)&&(S_IXUSR&st.st_mode)){printf("%s*\n",f[i].name); isPrint=1;}
+if(S_ISDIR(st.st_mode)){printf("%s/\n",f[i].name);isPrint=1;}
+if(S_ISLNK(st.st_mode)){printf("%s@\n",f[i].name);isPrint=1;}
+if(S_ISSOCK(st.st_mode)){printf("%s=\n",f[i].name);isPrint=1;}
+if(S_ISFIFO(st.st_mode)){printf("%s|\n",f[i].name);isPrint=1;}
+
+}
+if(isPrint==0)
+printf("%s\n",f[i].name);
+isPrint=0;
+
+
+}
+
+
+}
+/*f can close the l when f is after l*/
+void printWithMode(struct filename f[],int count,char* paramater){
+
+
 
 }
