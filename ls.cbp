@@ -31,9 +31,18 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="cmp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cmp.h" />
+		<Unit filename="ls.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="print.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="print.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />

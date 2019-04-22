@@ -1,7 +1,7 @@
 #ifndef CMP_H_INCLUDED
 #define CMP_H_INCLUDED
 #include"ls.h"
-int sortWithMode(struct filename f[],int count,char*paramater);
+int sortWithMode(struct filename f[],int count,char*paramater,char format);
 void dicSort(struct filename f[],int count);
 void timeSort(struct filename f[],int count,char flag);
 void sizeSort(struct filename f[],int count);

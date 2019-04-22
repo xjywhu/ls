@@ -7,7 +7,7 @@
 
 
 void reverseSort(struct filename f[],int count){
-char* tempFilename;
+char*tempFilename;
 int tempType;
 for(int i=0;i<count/2;i++){
 tempFilename=(char*)malloc(sizeof(char)*50);
@@ -17,6 +17,8 @@ strcpy(f[i].name,f[count-i-1].name);
 f[i].type=f[count-i-1].type;
 strcpy(f[count-i-1].name,tempFilename);
 f[count-i-1].type=tempType;
+//printf("name:%s",f[count-i-1].name);
+//printf("name:%d",f[count-i-1].type);
 }
 
 
@@ -205,11 +207,9 @@ f[k].type=type;
 
 }
 
-int sortWithMode(struct filename f[],int count,char*paramater){
+int sortWithMode(struct filename f[],int count,char*paramater,char format){
 
 
-if(strchr(paramater,'f')!=NULL)
-return 0;
 if(strlen(paramater)==0){
 dicSort(f,count);
 return 0;
@@ -220,10 +220,14 @@ case 'S':
 sizeSort(f,count);
 break;
 case 'c':
-//timeSort(f,count,'c');
+dicSort(f,count);
+if(format!='l'&&format!='n')
+timeSort(f,count,'c');
 break;
 case 'u':
-//timeSort(f,count,'u');
+dicSort(f,count);
+if(format!='l'&&format!='n')
+timeSort(f,count,'u');
 break;
 case 't':
 timeSort(f,count,'t');
@@ -231,6 +235,8 @@ break;
 case 'r':
 dicSort(f,count);
 reverseSort(f,count);
+break;
+case 'f':
 break;
 default:
 printf("The paramater about sort doesn't exit\n");
@@ -240,6 +246,9 @@ return 0;
 }
 /*delete r*/
 int hasr=0;
+int hasf=0;
+
+int hasSorted=0;
 int i=0,j=0;
 char tempParamater[strlen(paramater)];
 //debug
@@ -247,6 +256,10 @@ for(i=0;i<strlen(paramater);i++){
 tempParamater[i]=paramater[i];
 }
 for(i=0;i<strlen(tempParamater);i++){
+if(tempParamater[i]=='f')
+hasf=1;
+//if(tempParamater[i]=='S')
+//hasS=1;
 if(tempParamater[i]!='r'){
 tempParamater[j++]=tempParamater[i];
 }
@@ -256,29 +269,60 @@ hasr=1;
 }
 
 
-switch(tempParamater[strlen(tempParamater)-2]){
+switch(tempParamater[strlen(tempParamater)-1-hasr]){
 case 'S':
 sizeSort(f,count);
+hasSorted=1;
 break;
 case 'c':
-if(strchr(paramater,'t')!=NULL)
+if(strchr(paramater,'S')>strchr(paramater,'f')&&strchr(paramater,'S')>strchr(paramater,'t'))
+sizeSort(f,count);
+else{
+if(format!='l'&&format!='n'){
+if(strchr(paramater,'f')==NULL||strchr(paramater,'t')>strchr(paramater,'f')){
 timeSort(f,count,'c');
+hasSorted=1;
+}
+}
+else{
+if(strchr(paramater,'t')!=NULL){
+if(strchr(paramater,'f')!=NULL&&(strchr(paramater,'f')>strchr(paramater,'t'))){}
+else {timeSort(f,count,'c');hasSorted=1;}
+}
+}
+}
 break;
 case 'u':
-if(strchr(paramater,'t')!=NULL)
+if(strchr(paramater,'S')>strchr(paramater,'f')&&strchr(paramater,'S')>strchr(paramater,'t'))
+sizeSort(f,count);
+else{
+if(format!='l'&&format!='n'){
+if(strchr(paramater,'f')==NULL||strchr(paramater,'t')>strchr(paramater,'f')){
 timeSort(f,count,'u');
+hasSorted=1;
+}
+}
+else{
+if(strchr(paramater,'t')!=NULL){
+if(strchr(paramater,'f')!=NULL&&(strchr(paramater,'f')>strchr(paramater,'t'))){}
+else {timeSort(f,count,'u');hasSorted=1;}
+}
+}
+}
 break;
 case 't':
 if(strrchr(paramater,'u')==NULL&&strrchr(paramater,'c')==NULL)
-timeSort(f,count,'t');
+{timeSort(f,count,'t');hasSorted=1;}
 else if(strrchr(paramater,'u')!=NULL&&strrchr(paramater,'c')==NULL)
-timeSort(f,count,'u');
+{timeSort(f,count,'u');hasSorted=1;}
 else if(strrchr(paramater,'c')!=NULL&&strrchr(paramater,'u')==NULL)
-timeSort(f,count,'c');
+{timeSort(f,count,'c');hasSorted=1;}
 else if(strrchr(paramater,'c')>strrchr(paramater,'u'))
-timeSort(f,count,'c');
+{timeSort(f,count,'c');hasSorted=1;}
 else
-timeSort(f,count,'u');
+{timeSort(f,count,'u');hasSorted=1;}
+break;
+case 'f':
 break;
 default:
 printf("The paramater about sort doesn't exit\n");
@@ -286,8 +330,8 @@ exit(1);
 break;
 
 }
-if(hasr==1)
-reverseSort(f,count);
+if(hasr==0||(hasSorted==0&&hasf==1&&hasr==1)/*||(hasr==1&&hasf==1&&(strchr(paramater,'f')>strchr(paramater,'r')))*/){}
+else {reverseSort(f,count);}
 return 0;
 
 }

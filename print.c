@@ -9,6 +9,8 @@
 #include<time.h>
 #include <pwd.h>
 #include <sys/types.h>
+#include<math.h>
+
 
 
 void mode_to_letters(int mode,char str[])
@@ -205,9 +207,18 @@ isPrint=0;
 
 
 }
+char getPrintFormat(char*paramater){
+/*null??*/
+return paramater[strlen(paramater)];
+}
 /*f can close the l when f is after l*/
-void printWithMode(struct filename f[],int count,char* paramater){
-
-
-
+void printWithMode(struct filename f[],int count,char* paramater,char format){
+/*if(strchr(paramater,'l')==NULL||(strchr(paramater,'l')!=NULL&&strchr(paramater,'f')!=NULL&&(strchr(paramater,'f')>strchr(paramater,'l'))))
+printNormalformat(f,count,paramater);
+else
+printlongformat(f,count,paramater);*/
+if(format=='l'||format=='n')
+printlongformat(f,count,paramater);
+else
+printNormalformat(f,count,paramater);
 }
