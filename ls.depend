@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1556091443 source:/home/xjy/Desktop/ls/main.c
+1556097366 source:/home/xjy/Desktop/ls/main.c
 	<stdio.h>
 	<stdlib.h>
 	<sys/stat.h>

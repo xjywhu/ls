@@ -10,7 +10,8 @@
 
 struct filename fdir[200];
  int num=0;
- int ind=0;
+ int ind=-1;
+
 
 char*connectPathAndName(char*filepath,char*fileName){
 char*tempName;
@@ -93,6 +94,11 @@ while ((dirp = readdir(dp)) != NULL){
 
 	fn.name=(char*)malloc(sizeof(char)*50);
 	strcpy(fn.name,dirp->d_name);
+	fn.fullname=(char*)malloc(sizeof(char)*100);
+	strcpy(fn.fullname,file_path);
+	strcat(fn.fullname,"/");
+	strcat(fn.fullname,fn.name);
+
     char*temp=connectPathAndName(file_path,fn.name);
 	if(lstat(temp, &st) < 0) {
     perror(dirp->d_name);
@@ -114,28 +120,20 @@ while ((dirp = readdir(dp)) != NULL){
 
 
 
-int do_ls(char*file_path,char*fileNumber,char*sort,char*print,char format,int isRecursion,int index){
+int do_ls(char*file_path,char*fileNumber,char*sort,char*print,char format,int isRecursion,int isCurrent){
 
   int count=0;
  struct filename f[30];
  struct stat st;
  if(isRecursion==1){
-
+ printf("%s:\n",file_path);
  if(getFileNameArrayWithMode(file_path,f,fileNumber,&count)==1)
  exit(1);
  for(int i=0;i<count;i++){
- if(index==-1){
-   	if(lstat(f[i].name, &st) < 0) {
-    perror(f[i].name);
-    exit(1);
-    }
-
- }else{
-    if(lstat(f[i].fullname, &st) < 0) {
+     if(lstat(f[i].fullname, &st) < 0) {
     perror(f[i].fullname);
     exit(1);
     }
- }
     if(S_ISDIR(st.st_mode)){
 
     struct filename fn;
@@ -144,13 +142,19 @@ int do_ls(char*file_path,char*fileNumber,char*sort,char*print,char format,int is
     strcpy(fn.name,f[i].name);
     fn.fullname=(char*)malloc(sizeof(char)*100);
 
-	if(index==-1){
+	if(ind==-1){
+	if(isCurrent==1){
 	strcpy(fn.fullname,"./");
 	strcat(fn.fullname,fn.name);
 	}else{
-	strcpy(fn.fullname,fdir[index].fullname);
-	strcpy(fn.fullname,"/");
-	strcpy(fn.fullname,fn.name);
+	strcpy(fn.fullname,file_path);
+	strcat(fn.fullname,"/");
+	strcat(fn.fullname,fn.name);
+	}
+	}else{
+	strcpy(fn.fullname,fdir[ind].fullname);
+	strcat(fn.fullname,"/");
+	strcat(fn.fullname,fn.name);
 	}
 
     fdir[num]=fn;
@@ -158,24 +162,22 @@ int do_ls(char*file_path,char*fileNumber,char*sort,char*print,char format,int is
     }
 
  }
-sortWithMode(f,count,sort,format);
+ sortWithMode(f,count,sort,format);
  printWithMode(file_path,f,count,print,format);
-    while(num>0){
-    if(do_ls(fdir[ind++].fullname,fileNumber,sort,print,format,isRecursion,index++)==1)
+ printf("\n");
+ ind++;
+    while(ind<num){
+    if(do_ls(fdir[ind].fullname,fileNumber,sort,print,format,isRecursion,isCurrent)==1)
     exit(1);
-    num--;
     }
-
-
  }
  else{
 
-  if(getFileNameArrayWithMode(file_path,f,fileNumber,&count)==1)
+if(getFileNameArrayWithMode(file_path,f,fileNumber,&count)==1)
  exit(1);
  sortWithMode(f,count,sort,format);
  printWithMode(file_path,f,count,print,format);
  }
-
  return 0;
 }
 
@@ -184,11 +186,12 @@ sortWithMode(f,count,sort,format);
 int doCurrent(char*fileNumber,char*sort,char*print,char format,int isRecursion){
  char buf[80];
  char*currentpath;
+ int isCurrent=1;
  if((currentpath=getcwd(buf,sizeof(buf)))==NULL){
  exit(1);
  }
  else{
-  if(do_ls(currentpath,fileNumber,sort,print,format,isRecursion,-1)==1)
+  if(do_ls(currentpath,fileNumber,sort,print,format,isRecursion,isCurrent)==1)
   exit(1);
  }
  return 0;
@@ -197,6 +200,7 @@ int doCurrent(char*fileNumber,char*sort,char*print,char format,int isRecursion){
 
 int doTarget(char*filepath,char*fileNumber,char*sort,char*print,char format,int isRecursion){
 struct stat st;
+int isCurrent=0;
 if(lstat(filepath, &st) < 0) {
   perror(filepath);
   exit(1);
@@ -208,7 +212,7 @@ if(do_ls("",fileNumber,sort,print,format)==1)
  }*/
 
  //if(S_ISDIR(st.st_mode)){
-    if(do_ls(filepath,fileNumber,sort,print,format,isRecursion,-1)==1)
+    if(do_ls(filepath,fileNumber,sort,print,format,isRecursion,isCurrent)==1)
     exit(1);
  //}
 return 0;
