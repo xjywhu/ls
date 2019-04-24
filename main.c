@@ -8,6 +8,37 @@
 #include "print.h"
 #include "ls.h"
 
+struct filename fdir[200];
+ int num=0;
+ int ind=0;
+
+char*connectPathAndName(char*filepath,char*fileName){
+char*tempName;
+struct stat st;
+if(lstat(filepath, &st) < 0) {
+perror(filepath);
+exit(1);
+}
+/*如果是目录文件则需要拼接，否则不需要拼接*/
+if(S_ISDIR(st.st_mode)){
+if(filepath[strlen(filepath)-1]=='/'){
+tempName=(char*)malloc(strlen(filepath)+strlen(fileName)+1);
+strcpy(tempName,filepath);
+strcat(tempName,fileName);
+}
+else{
+tempName=(char*)malloc(strlen(filepath)+strlen(fileName)+strlen("/")+1);
+strcpy(tempName,filepath);
+strcat(tempName,"/");
+strcat(tempName,fileName);
+}
+}
+else{
+tempName=(char*)malloc(strlen(filepath)+1);
+strcpy(tempName,filepath);
+}
+return tempName;
+}
 /*参数优先级d,a,A default*/
 int getFileNameArrayWithMode(char*file_path,struct filename f[],char* paramater,int* count){
  DIR *dp;
@@ -19,6 +50,7 @@ int getFileNameArrayWithMode(char*file_path,struct filename f[],char* paramater,
     perror(file_path);
     exit(1);
     }
+    /*如果目标是普通文件，则需要对该文件操作*/
 	if(S_ISREG(st.st_mode)){
     fn.name=(char*)malloc(sizeof(char)*50);
 	strcpy(fn.name,file_path);
@@ -28,6 +60,7 @@ int getFileNameArrayWithMode(char*file_path,struct filename f[],char* paramater,
 	*count=tempcount;
 	return 0;
 	}
+	/*如果目标是目录文件则需要对目录下面的所有文件操作*/
 	if(S_ISDIR(st.st_mode)){
     if ((dp = opendir(file_path)) == NULL){
 	printf("can't open %s",file_path);
@@ -35,9 +68,9 @@ int getFileNameArrayWithMode(char*file_path,struct filename f[],char* paramater,
 	}
 	}
 
-
+    /*有参数d则只需要操作当前目录*/
     if(strrchr(paramater,'d')!=NULL){
-    fn.name=(char*)malloc(sizeof(char)*1);
+    fn.name=(char*)malloc(sizeof(char)*50);
 	strcpy(fn.name,".");
 	fn.type=isDirectory;
 	f[tempcount]=fn;
@@ -47,11 +80,12 @@ int getFileNameArrayWithMode(char*file_path,struct filename f[],char* paramater,
     }
 while ((dirp = readdir(dp)) != NULL){
 
-
-    if(strrchr(paramater,'A')!=NULL&&strrchr(paramater,'a')==NULL&&strrchr(paramater,'f')){
+/*如果有参数A且没有a和f，则A起作用*/
+    if(strrchr(paramater,'A')!=NULL&&strrchr(paramater,'a')==NULL&&strrchr(paramater,'f')==NULL){
         if(strcmp(dirp->d_name,".")==0||strcmp(dirp->d_name,"..")==0)
 	    continue;
     }
+    /*没有参数的时候会跳过隐藏文件（以.开头）*/
     if(strlen(paramater)==0){
       if(dirp->d_name[0]=='.')
 	    continue;
@@ -59,7 +93,8 @@ while ((dirp = readdir(dp)) != NULL){
 
 	fn.name=(char*)malloc(sizeof(char)*50);
 	strcpy(fn.name,dirp->d_name);
-	if(lstat(dirp->d_name, &st) < 0) {
+    char*temp=connectPathAndName(file_path,fn.name);
+	if(lstat(temp, &st) < 0) {
     perror(dirp->d_name);
     exit(1);
     }
@@ -78,146 +113,167 @@ while ((dirp = readdir(dp)) != NULL){
 }
 
 
-/*int do_ls(char*file_path){
 
- int count=0;
+int do_ls(char*file_path,char*fileNumber,char*sort,char*print,char format,int isRecursion,int index){
+
+  int count=0;
  struct filename f[30];
- if(getFileNameArrayWithMode(file_path,f,"a",&count)==1)
- exit(1);
+ struct stat st;
+ if(isRecursion==1){
 
-	//dicSort(f,count);
-    sortWithMode(f,count,"Sfc",'1');
-	printNormalformat(f,count,"");
-	//printWithMode(f,count,"l");
-    //reverseSort(f,count);xjy
-	//printNormalformat(f,count,"Fsih");
-
-
-	return 0;
-}*/
-
-int do_ls(char*file_path,char*fileNumber,char*sort,char*print,char format){
-
- int count=0;
- struct filename f[30];
  if(getFileNameArrayWithMode(file_path,f,fileNumber,&count)==1)
  exit(1);
+ for(int i=0;i<count;i++){
+ if(index==-1){
+   	if(lstat(f[i].name, &st) < 0) {
+    perror(f[i].name);
+    exit(1);
+    }
 
-	//dicSort(f,count);
+ }else{
+    if(lstat(f[i].fullname, &st) < 0) {
+    perror(f[i].fullname);
+    exit(1);
+    }
+ }
+    if(S_ISDIR(st.st_mode)){
+
+    struct filename fn;
+    fn.type=isDirectory;
+    fn.name=(char*)malloc(sizeof(char)*50);
+    strcpy(fn.name,f[i].name);
+    fn.fullname=(char*)malloc(sizeof(char)*100);
+
+	if(index==-1){
+	strcpy(fn.fullname,"./");
+	strcat(fn.fullname,fn.name);
+	}else{
+	strcpy(fn.fullname,fdir[index].fullname);
+	strcpy(fn.fullname,"/");
+	strcpy(fn.fullname,fn.name);
+	}
+
+    fdir[num]=fn;
+    num++;
+    }
+
+ }
 sortWithMode(f,count,sort,format);
-printWithMode(f,count,print,format);
-//printNormalformat(f,count,"");
-	//printWithMode(f,count,"l");
-    //reverseSort(f,count);xjy
-	//printNormalformat(f,count,"Fsih");
-	return 0;
+ printWithMode(file_path,f,count,print,format);
+    while(num>0){
+    if(do_ls(fdir[ind++].fullname,fileNumber,sort,print,format,isRecursion,index++)==1)
+    exit(1);
+    num--;
+    }
+
+
+ }
+ else{
+
+  if(getFileNameArrayWithMode(file_path,f,fileNumber,&count)==1)
+ exit(1);
+ sortWithMode(f,count,sort,format);
+ printWithMode(file_path,f,count,print,format);
+ }
+
+ return 0;
 }
 
 
 
-int doCurrent(char*fileNumber,char*sort,char*print,char format){
+int doCurrent(char*fileNumber,char*sort,char*print,char format,int isRecursion){
  char buf[80];
  char*currentpath;
  if((currentpath=getcwd(buf,sizeof(buf)))==NULL){
  exit(1);
  }
  else{
-  if(do_ls(currentpath,fileNumber,sort,print,format)==1)
+  if(do_ls(currentpath,fileNumber,sort,print,format,isRecursion,-1)==1)
   exit(1);
  }
  return 0;
 }
 
 
-/*int doTarget(char*filepath){
+int doTarget(char*filepath,char*fileNumber,char*sort,char*print,char format,int isRecursion){
 struct stat st;
-
 if(lstat(filepath, &st) < 0) {
   perror(filepath);
   exit(1);
  }
 
- if(S_ISREG(st.st_mode)){
-   printf("%s\n",filepath);
-   return 0;
- }
-
- if(S_ISDIR(st.st_mode)){
-    if(do_ls(filepath)==1)
+ /*if(S_ISREG(st.st_mode)){
+if(do_ls("",fileNumber,sort,print,format)==1)
     exit(1);
- }
+ }*/
+
+ //if(S_ISDIR(st.st_mode)){
+    if(do_ls(filepath,fileNumber,sort,print,format,isRecursion,-1)==1)
+    exit(1);
+ //}
 return 0;
-}*/
+}
 
 
 int main(int argc,char*argv[])
 {
 
-char*arguments="AacdFfhiklnrSstu";
+char*arguments="AaCcdFfhiklnRrSstuqx1";
+char*targetFile[10];
 int args;
 int fileNumberParamaterCount=0;
 int sortParamaterCount=0;
 int printParamaterCount=0;
 int formatParamaterCount=0;
+int isRecursion=0;
 char*fileNumber=(char*)malloc(sizeof(char)*10);
 char*sort=(char*)malloc(sizeof(char)*10);
 char*print=(char*)malloc(sizeof(char)*10);
 char*formatNumber=(char*)malloc(sizeof(char)*10);
-/*while((args=getopt(argc,argv,arguments))!=-1){
-if(args=='A'||args=='a'||args=='d'||args=='f')
-fileNumberParamaterCount++;
-if(args=='c'||args=='f'||args=='r'||args=='s'||args=='t'||args=='u')
-sortParamaterCount++;
-if(args=='k'||args=='F'||args=='s'||args=='i'||args=='h')
-printParamaterCount++;
-if(args=='n'||args=='l')
-formatParamaterCount++;
-}*/
+
 while((args=getopt(argc,argv,arguments))!=-1){
 if(args=='A'||args=='a'||args=='d'||args=='f')
 fileNumber[fileNumberParamaterCount++]=args;
 if(args=='c'||args=='f'||args=='r'||args=='S'||args=='t'||args=='u')
 sort[sortParamaterCount++]=args;
-if(args=='k'||args=='F'||args=='s'||args=='i'||args=='h')
+if(args=='k'||args=='F'||args=='s'||args=='i'||args=='h'||args=='n'||args=='q')
 print[printParamaterCount++]=args;
-if(args=='n'||args=='l')
+if(args=='n'||args=='l'||args=='1'||args=='x'||args=='C')
 formatNumber[formatParamaterCount++]=args;
+if(args=='R')
+isRecursion=1;
 }
-/*char*fileNumber=(char*)malloc(sizeof(char)*fileNumberParamaterCount);
-char*sort=(char*)malloc(sizeof(char)*sortParamaterCount);
-char*print=(char*)malloc(sizeof(char)*printParamaterCount);
-char*formatNumber=(char*)malloc(sizeof(char)*formatParamaterCount);
-fileNumberParamaterCount=0;
-sortParamaterCount=0;
-printParamaterCount=0;
-formatParamaterCount=0;
-args=0;
-while((args=getopt(argc,argv,arguments))!=-1){
-if(args=='A'||args=='a'||args=='d'||args=='f')
-fileNumber[fileNumberParamaterCount++]=args;
-if(args=='c'||args=='f'||args=='r'||args=='s'||args=='t'||args=='u')
-sort[sortParamaterCount++]=args;
-if(args=='k'||args=='F'||args=='s'||args=='i'||args=='h')
-print[printParamaterCount++]=args;
-if(args=='n'||args=='l')
-formatNumber[formatParamaterCount++]=args;
-}*/
-char format=formatNumber[formatParamaterCount-1];
-doCurrent(fileNumber,sort,print,format);
-    /*switch(argc){
-    case 1:
-    if(doCurrent()==1)
-    exit(1);
-    break;
-    case 2:
-    if(doTarget(argv[1])==1)
-    exit(1);
-    break;
-    case 3:
-    break;
-    default:
-    printf("The format of the arguement is not correct\n");
-    exit(1);
-    }*/
+int num=0;
+for(int i=1;i<argc;i++){
+if(argv[i][0]!='-'){
+targetFile[num]=(char*)malloc(sizeof(char)*50);
+targetFile[num]=argv[i];
+num++;
+}
+}
+//the last pamater work
+//the f will close l
+char format;
+char*tempformat=(char*)malloc(sizeof(char)*3);
+tempformat[1]=formatNumber[formatParamaterCount-1];
+tempformat[0]=formatNumber[formatParamaterCount-2];
+if(tempformat[1]!='f'){
+format=tempformat[1];
+}
+else{
+if(tempformat[0]=='l')
+format=tempformat[3];
+else
+format=tempformat[0];
+}
 
+
+
+if(num==0)
+doCurrent(fileNumber,sort,print,format,isRecursion);
+else{
+for(int i=0;i<num;i++){
+doTarget(targetFile[i],fileNumber,sort,print,format,isRecursion);
+}
+}
 }

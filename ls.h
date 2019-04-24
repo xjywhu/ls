@@ -8,8 +8,9 @@
 struct filename{
 char*name;
 int type;//type=1 is directory type=0 is file
+char*fullname;
 };
 
 int getFileNameArrayWithMode(char*file_path,struct filename f[],char*paramater,int*count);
-
+char*connectPathAndName(char*filepath,char*fileName);
 #endif // LS_H_INCLUDED

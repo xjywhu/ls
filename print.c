@@ -10,6 +10,8 @@
 #include <pwd.h>
 #include <sys/types.h>
 #include<math.h>
+#include<ctype.h>
+#include "ls.h"
 
 
 
@@ -65,14 +67,13 @@ char *uid_to_name( uid_t uid )
 
 }
 
-void printlongformat(struct filename f[],int count,char *paramater){
+void printlongformat(char*filepath,struct filename f[],int count,char *paramater){
 long int total=0;
 struct stat st;
 char str[10];
-int isPrint=0;
-
+/*calculate the total block*/
 for(int i=0;i<count;i++){
- if(lstat(f[i].name, &st) < 0) {
+ if(lstat(connectPathAndName(filepath,f[i].name), &st) < 0) {
   perror(f[i].name);
   exit(1);
  }
@@ -86,7 +87,7 @@ else
  printf("total %ld\n",total);
 
 for(int i=0;i<count;i++){
- if(lstat(f[i].name, &st) < 0) {
+ if(lstat(connectPathAndName(filepath,f[i].name), &st) < 0) {
   perror(f[i].name);
   exit(1);
  }
@@ -150,61 +151,116 @@ printf("%.12s ",ctime(&st.st_ctime)+4);
 printf("%.12s ",ctime(&st.st_mtime)+4);
 }
 
+/*print the name*/
+if(strchr(paramater,'q')!=NULL){
+for(int j=0;j<strlen(f[i].name);j++)
+if(isprint(f[i].name[j]))
+printf("%c",f[i].name[j]);
+else
+printf("?");
+}
+else{
+printf("%s",f[i].name);
+}
+
 
 if(strrchr(paramater,'F')!=NULL){
-if(S_ISREG(st.st_mode)&&(S_IXUSR&st.st_mode)){printf("%s*\n",f[i].name); isPrint=1;}
-if(S_ISDIR(st.st_mode)){printf("%s/\n",f[i].name);isPrint=1;}
-if(S_ISLNK(st.st_mode)){printf("%s@\n",f[i].name);isPrint=1;}
-if(S_ISSOCK(st.st_mode)){printf("%s=\n",f[i].name);isPrint=1;}
-if(S_ISFIFO(st.st_mode)){printf("%s|\n",f[i].name);isPrint=1;}
+if(S_ISREG(st.st_mode)&&(S_IXUSR&st.st_mode)){printf("*");}
+if(S_ISDIR(st.st_mode)){printf("/");}
+if(S_ISLNK(st.st_mode)){printf("@");}
+if(S_ISSOCK(st.st_mode)){printf("=");}
+if(S_ISFIFO(st.st_mode)){printf("|");}
 
 }
-if(isPrint==0)
-printf("%s\n",f[i].name);
-isPrint=0;
-
+printf("\n");
 }
 
 }
 /*relative to the width of screen*/
-void printNormalformat(struct filename f[],int count,char* paramater){
+void printNormalformat(char*filepath,struct filename f[],int count,char* paramater,char format){
 struct stat st;
-int isPrint=0;
+long int total=0;
 for(int i=0;i<count;i++){
- if(lstat(f[i].name, &st) < 0) {
+
+ if(lstat(connectPathAndName(filepath,f[i].name),&st) < 0) {
   perror(f[i].name);
   exit(1);
  }
+  total+=st.st_blocks/2;
+ }
 
+
+ if(strchr(paramater,'i')!=NULL)
+printf("%ld ",st.st_ino);
+/*print the number of blocks*/
+if(strchr(paramater,'s')!=NULL){
+if(strchr(paramater,'h')!=NULL){
+
+ printf("total %ldk\n",total);
+}
+else{
+
+ printf("total %ld\n",total);
+}
+}
+
+
+for(int i=0;i<count;i++){
+ if(lstat(connectPathAndName(filepath,f[i].name), &st) < 0) {
+  perror(f[i].name);
+  exit(1);
+ }
 /*print i node*/
 if(strchr(paramater,'i')!=NULL)
 printf("%ld ",st.st_ino);
 /*print the number of blocks*/
 if(strchr(paramater,'s')!=NULL){
-if(strchr(paramater,'h')!=NULL)
+if(strchr(paramater,'h')!=NULL){
 printf("%.1fk ",(float)st.st_blocks/2);
-else
+
+}
+else{
 printf("%ld ",st.st_blocks/2);
 
 }
+}
 
-/*print the type of the file*/
+/*print the name*/
+if(strchr(paramater,'q')!=NULL){
+for(int j=0;j<strlen(f[i].name);j++)
+if(isprint(f[i].name[j]))
+printf("%c",f[i].name[j]);
+else
+printf("?");
+}
+else{
+printf("%s",f[i].name);
+}
+
 
 if(strrchr(paramater,'F')!=NULL){
-if(S_ISREG(st.st_mode)&&(S_IXUSR&st.st_mode)){printf("%s*\n",f[i].name); isPrint=1;}
-if(S_ISDIR(st.st_mode)){printf("%s/\n",f[i].name);isPrint=1;}
-if(S_ISLNK(st.st_mode)){printf("%s@\n",f[i].name);isPrint=1;}
-if(S_ISSOCK(st.st_mode)){printf("%s=\n",f[i].name);isPrint=1;}
-if(S_ISFIFO(st.st_mode)){printf("%s|\n",f[i].name);isPrint=1;}
-
-}
-if(isPrint==0)
-printf("%s\n",f[i].name);
-isPrint=0;
-
+if(S_ISREG(st.st_mode)&&(S_IXUSR&st.st_mode)){printf("*");}
+if(S_ISDIR(st.st_mode)){printf("/");}
+if(S_ISLNK(st.st_mode)){printf("@");}
+if(S_ISSOCK(st.st_mode)){printf("=");}
+if(S_ISFIFO(st.st_mode)){printf("|");}
 
 }
 
+switch(format){
+case '1':
+printf("\n");
+break;
+case 'C':
+printf("\t");
+break;
+default:
+printf("\t");
+}
+
+}
+if(format!='1')
+printf("\n");
 
 }
 char getPrintFormat(char*paramater){
@@ -212,13 +268,11 @@ char getPrintFormat(char*paramater){
 return paramater[strlen(paramater)];
 }
 /*f can close the l when f is after l*/
-void printWithMode(struct filename f[],int count,char* paramater,char format){
-/*if(strchr(paramater,'l')==NULL||(strchr(paramater,'l')!=NULL&&strchr(paramater,'f')!=NULL&&(strchr(paramater,'f')>strchr(paramater,'l'))))
-printNormalformat(f,count,paramater);
-else
-printlongformat(f,count,paramater);*/
+void printWithMode(char*filepath,struct filename f[],int count,char* paramater,char format){
+
 if(format=='l'||format=='n')
-printlongformat(f,count,paramater);
+printlongformat(filepath,f,count,paramater);
 else
-printNormalformat(f,count,paramater);
+printNormalformat(filepath,f,count,paramater,format);
+
 }
