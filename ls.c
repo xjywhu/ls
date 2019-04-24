@@ -217,7 +217,7 @@ return 0;
 int main(int argc,char*argv[])
 {
 
-char*arguments="AaCcdFfhiklnRrSstuqx1";
+char*arguments="AaCcdFfhiklnRrSstuqx1w";
 char*targetFile[10];
 int args;
 int fileNumberParamaterCount=0;

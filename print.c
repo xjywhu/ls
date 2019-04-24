@@ -226,7 +226,7 @@ printf("%ld ",st.st_blocks/2);
 }
 
 /*print the name*/
-if(strchr(paramater,'q')!=NULL){
+if(strchr(paramater,'q')!=NULL&&strchr(paramater,'q')>strchr(paramater,'w')){
 for(int j=0;j<strlen(f[i].name);j++)
 if(isprint(f[i].name[j]))
 printf("%c",f[i].name[j]);

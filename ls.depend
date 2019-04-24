@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1556097366 source:/home/xjy/Desktop/ls/main.c
+1556107196 source:/home/xjy/Desktop/ls/main.c
 	<stdio.h>
 	<stdlib.h>
 	<sys/stat.h>
@@ -10,7 +10,7 @@
 	"print.h"
 	"ls.h"
 
-1556104623 source:/home/xjy/Desktop/ls/print.c
+1556107419 source:/home/xjy/Desktop/ls/print.c
 	"print.h"
 	<sys/stat.h>
 	<unistd.h>
@@ -41,5 +41,16 @@
 	"ls.h"
 
 1555943143 /home/xjy/Desktop/ls/cmp.h
+	"ls.h"
+
+1556107196 source:/home/xjy/Desktop/ls/ls.c
+	<stdio.h>
+	<stdlib.h>
+	<sys/stat.h>
+	<dirent.h>
+	<unistd.h>
+	<string.h>
+	"cmp.h"
+	"print.h"
 	"ls.h"
 
