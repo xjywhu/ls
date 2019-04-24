@@ -66,7 +66,7 @@ char *uid_to_name( uid_t uid )
 		return pw_ptr->pw_name;
 
 }
-
+ /*输出长格式*/
 void printlongformat(char*filepath,struct filename f[],int count,char *paramater){
 long int total=0;
 struct stat st;
@@ -152,7 +152,7 @@ printf("%.12s ",ctime(&st.st_mtime)+4);
 }
 
 /*print the name*/
-if(strchr(paramater,'q')!=NULL){
+if(strchr(paramater,'q')!=NULL&&strchr(paramater,'q')>strchr(paramater,'w')){
 for(int j=0;j<strlen(f[i].name);j++)
 if(isprint(f[i].name[j]))
 printf("%c",f[i].name[j]);
@@ -176,7 +176,7 @@ printf("\n");
 }
 
 }
-/*relative to the width of screen*/
+ /*输出普通格式*/
 void printNormalformat(char*filepath,struct filename f[],int count,char* paramater,char format){
 struct stat st;
 long int total=0;
@@ -251,6 +251,8 @@ switch(format){
 case '1':
 printf("\n");
 break;
+case 'x':
+printf("\t");
 case 'C':
 printf("\t");
 break;
@@ -263,16 +265,12 @@ if(format!='1')
 printf("\n");
 
 }
-char getPrintFormat(char*paramater){
-/*null??*/
-return paramater[strlen(paramater)];
-}
-/*f can close the l when f is after l*/
-void printWithMode(char*filepath,struct filename f[],int count,char* paramater,char format){
 
+/*f can close the l when f is after l*/
+ /*根据参数进行打印*/
+void printWithMode(char*filepath,struct filename f[],int count,char* paramater,char format){
 if(format=='l'||format=='n')
 printlongformat(filepath,f,count,paramater);
 else
 printNormalformat(filepath,f,count,paramater,format);
-
 }

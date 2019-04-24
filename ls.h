@@ -6,9 +6,9 @@
 #define equals 3
 #define secondBig 4
 struct filename{
-char*name;
+char*name;//filename
 int type;//type=1 is directory type=0 is file
-char*fullname;
+char*fullname;//fullfilename include the path.
 };
 
 int getFileNameArrayWithMode(char*file_path,struct filename f[],char*paramater,int*count);

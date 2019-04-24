@@ -10,7 +10,7 @@
 	"print.h"
 	"ls.h"
 
-1556033312 source:/home/xjy/Desktop/ls/print.c
+1556104623 source:/home/xjy/Desktop/ls/print.c
 	"print.h"
 	<sys/stat.h>
 	<unistd.h>
@@ -26,7 +26,7 @@
 	<ctype.h>
 	"ls.h"
 
-1555943143 source:/home/xjy/Desktop/ls/cmp.c
+1556104623 source:/home/xjy/Desktop/ls/cmp.c
 	<stdio.h>
 	<ctype.h>
 	<string.h>
@@ -34,9 +34,9 @@
 	<sys/stat.h>
 	"cmp.h"
 
-1556092994 /home/xjy/Desktop/ls/ls.h
+1556104623 /home/xjy/Desktop/ls/ls.h
 
-1556032318 /home/xjy/Desktop/ls/print.h
+1556104623 /home/xjy/Desktop/ls/print.h
 	<sys/stat.h>
 	"ls.h"
 

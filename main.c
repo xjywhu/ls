@@ -40,7 +40,7 @@ strcpy(tempName,filepath);
 }
 return tempName;
 }
-/*参数优先级d,a,A default*/
+/*得到存放文件的数组，参数优先级d,a,A default*/
 int getFileNameArrayWithMode(char*file_path,struct filename f[],char* paramater,int* count){
  DIR *dp;
  struct dirent *dirp;
@@ -81,7 +81,7 @@ int getFileNameArrayWithMode(char*file_path,struct filename f[],char* paramater,
     }
 while ((dirp = readdir(dp)) != NULL){
 
-/*如果有参数A且没有a和f，则A起作用*/
+    /*如果有参数A且没有a和f，则A起作用*/
     if(strrchr(paramater,'A')!=NULL&&strrchr(paramater,'a')==NULL&&strrchr(paramater,'f')==NULL){
         if(strcmp(dirp->d_name,".")==0||strcmp(dirp->d_name,"..")==0)
 	    continue;
@@ -122,10 +122,11 @@ while ((dirp = readdir(dp)) != NULL){
 
 int do_ls(char*file_path,char*fileNumber,char*sort,char*print,char format,int isRecursion,int isCurrent){
 
-  int count=0;
+int count=0;
  struct filename f[30];
  struct stat st;
  if(isRecursion==1){
+ /*递归处理*/
  printf("%s:\n",file_path);
  if(getFileNameArrayWithMode(file_path,f,fileNumber,&count)==1)
  exit(1);
@@ -173,7 +174,7 @@ int do_ls(char*file_path,char*fileNumber,char*sort,char*print,char format,int is
  }
  else{
 
-if(getFileNameArrayWithMode(file_path,f,fileNumber,&count)==1)
+ if(getFileNameArrayWithMode(file_path,f,fileNumber,&count)==1)
  exit(1);
  sortWithMode(f,count,sort,format);
  printWithMode(file_path,f,count,print,format);
@@ -206,15 +207,9 @@ if(lstat(filepath, &st) < 0) {
   exit(1);
  }
 
- /*if(S_ISREG(st.st_mode)){
-if(do_ls("",fileNumber,sort,print,format)==1)
-    exit(1);
- }*/
+if(do_ls(filepath,fileNumber,sort,print,format,isRecursion,isCurrent)==1)
+exit(1);
 
- //if(S_ISDIR(st.st_mode)){
-    if(do_ls(filepath,fileNumber,sort,print,format,isRecursion,isCurrent)==1)
-    exit(1);
- //}
 return 0;
 }
 
@@ -234,13 +229,19 @@ char*fileNumber=(char*)malloc(sizeof(char)*10);
 char*sort=(char*)malloc(sizeof(char)*10);
 char*print=(char*)malloc(sizeof(char)*10);
 char*formatNumber=(char*)malloc(sizeof(char)*10);
-
+/*把各类参数放在相应的数组
+文件数目相关：A,a,d,f:fileNumber
+排序相关：c,f,r,s,t,u:sort
+输出内容相关:k,F,s,i,h,n,q:print
+输出格式相关:n,l,f,1,x,c,w:format
+是否递归处理：R:isRecursion
+*/
 while((args=getopt(argc,argv,arguments))!=-1){
 if(args=='A'||args=='a'||args=='d'||args=='f')
 fileNumber[fileNumberParamaterCount++]=args;
 if(args=='c'||args=='f'||args=='r'||args=='S'||args=='t'||args=='u')
 sort[sortParamaterCount++]=args;
-if(args=='k'||args=='F'||args=='s'||args=='i'||args=='h'||args=='n'||args=='q')
+if(args=='k'||args=='F'||args=='s'||args=='i'||args=='h'||args=='n'||args=='q'||args=='w')
 print[printParamaterCount++]=args;
 if(args=='n'||args=='l'||args=='1'||args=='x'||args=='C')
 formatNumber[formatParamaterCount++]=args;
@@ -272,7 +273,7 @@ format=tempformat[0];
 }
 
 
-
+/*当目标文件数组为空，则对当前路径操作，否则对目标路径操作*/
 if(num==0)
 doCurrent(fileNumber,sort,print,format,isRecursion);
 else{

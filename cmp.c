@@ -5,7 +5,7 @@
 #include<sys/stat.h>
 #include "cmp.h"
 
-
+ /*逆序*/
 void reverseSort(struct filename f[],int count){
 char*tempFilename;
 int tempType;
@@ -66,7 +66,7 @@ return secondBig;
 }
 
 
-
+ /*字典排序*/
 void dicSort(struct filename f[],int count){
 char* temp;
 int type;
@@ -144,7 +144,7 @@ return 1;
 
 }
 
-
+ /*根据参数对相应的时间排序*/
 void timeSort(struct filename f[],int count,char flag){
 dicSort(f,count);
 char* temp;
@@ -186,7 +186,7 @@ else
 return secondBig;
 }
 }
-
+ /*根据块大小排序*/
 void sizeSort(struct filename f[],int count){
 dicSort(f,count);
 char* temp;
@@ -206,10 +206,8 @@ f[k].type=type;
   }
 
 }
-
+ /*根据传入的参数排序*/
 int sortWithMode(struct filename f[],int count,char*paramater,char format){
-
-
 if(strlen(paramater)==0){
 dicSort(f,count);
 return 0;
